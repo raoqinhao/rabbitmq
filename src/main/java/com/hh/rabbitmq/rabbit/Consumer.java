@@ -1,15 +1,33 @@
 package com.hh.rabbitmq.rabbit;
 
-import org.springframework.amqp.rabbit.annotation.RabbitHandler;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.core.ExchangeTypes;
+import org.springframework.amqp.rabbit.annotation.*;
 import org.springframework.stereotype.Component;
 
 @Component
-@RabbitListener(queues="topic")
 public class Consumer {
 
+    @RabbitListener(queues="topic")
     @RabbitHandler
-    public void accept(String msg) {
+    public void topic(String msg) {
+        System.out.println(msg);
+    }
+
+    @RabbitListener(queues="topic")
+    @RabbitHandler
+    public void topic1(String msg) {
+        System.out.println(msg + " 1");
+    }
+
+
+    @RabbitListener(bindings = @QueueBinding(value = @Queue(value = "exchange", durable = "true"),
+            exchange=@Exchange(
+            value = "spring.topic.exchange",
+            ignoreDeclarationExceptions = "true",
+            type = ExchangeTypes.TOPIC),
+            key = {"person.*"}))
+    @RabbitHandler
+    public void topicMessage(String msg) {
         System.out.println(msg);
     }
 

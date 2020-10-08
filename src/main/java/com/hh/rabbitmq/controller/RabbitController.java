@@ -24,4 +24,11 @@ public class RabbitController {
         return send;
     }
 
+    @RequestMapping(value = "/sendTopicMessage",method = RequestMethod.POST)
+    @ResponseBody
+    private String sendTopicMessage(@RequestBody String json) {
+        String send = product.sendTopicMessage(json);
+        return send;
+    }
+
 }

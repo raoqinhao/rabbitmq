@@ -9,6 +9,7 @@ public class RabbitConfig {
 
     private static final String TOPIC_QUEUE = "topic";
     private static final String MESSAGE_QUEUE = "message";
+    private static final String EXCHANGE_QUEUE = "exchange";
 
     @Bean
     public Queue topicQueue(){
@@ -18,6 +19,11 @@ public class RabbitConfig {
     @Bean
     public Queue messageQueue(){
         return new Queue(MESSAGE_QUEUE,true);
+    }
+
+    @Bean
+    public Queue exchangeQueue(){
+        return new Queue(EXCHANGE_QUEUE,true);
     }
 
 }

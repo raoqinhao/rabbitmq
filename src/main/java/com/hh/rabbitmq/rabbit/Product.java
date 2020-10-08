@@ -29,4 +29,13 @@ public class Product {
         return "success";
     }
 
+    public String sendTopicMessage(String message) {
+        try {
+            amqpTemplate.convertAndSend("spring.topic.exchange","person.insert",message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "success";
+    }
+
 }
