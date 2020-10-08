@@ -11,9 +11,18 @@ public class Product {
     @Autowired
     private AmqpTemplate amqpTemplate;
 
-    public String send(String message) {
+    public String sendTopic(String message) {
         try {
             amqpTemplate.convertAndSend("topic",message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "success";
+    }
+
+    public String sendMessage(String message) {
+        try {
+            amqpTemplate.convertAndSend("message",message);
         } catch (Exception e) {
             e.printStackTrace();
         }
