@@ -31,4 +31,11 @@ public class RabbitController {
         return send;
     }
 
+    @RequestMapping(value = "/sendWorkMessage",method = RequestMethod.POST)
+    @ResponseBody
+    private String sendWorkMessage(@RequestBody String json) {
+        String send = product.sendWorkPattern(json);
+        return send;
+    }
+
 }

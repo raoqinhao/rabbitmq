@@ -38,4 +38,16 @@ public class Product {
         return "success";
     }
 
+    /**
+     * Work模式
+     */
+    public String sendWorkPattern(String message) {
+        try{
+            amqpTemplate.convertAndSend("spring.work.queue",message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "success";
+    }
+
 }

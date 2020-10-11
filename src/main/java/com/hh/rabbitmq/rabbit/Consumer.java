@@ -31,4 +31,10 @@ public class Consumer {
         System.out.println(msg);
     }
 
+    @RabbitListener(queuesToDeclare = @Queue("spring.work.queue"))
+    @RabbitHandler
+    public void workPatternMessage(String msg) {
+        System.out.println(msg);
+    }
+
 }
