@@ -23,7 +23,7 @@ public class RabbitController {
     @RequestMapping(value = "sendMessage",method = RequestMethod.POST)
     public String sendMessage(@RequestBody String message) {
         try {
-            amqpTemplate.convertAndSend("spring.direct.exchange", "spring.routing", message, new MessagePostProcessor() {
+            amqpTemplate.convertAndSend("spring.direct.deadExchange", "spring.deadRouting", message, new MessagePostProcessor() {
                 @Override
                 public Message postProcessMessage(Message message) throws AmqpException {
                     message.getMessageProperties().setExpiration("10000");  // 设置消息过期时间，过期后，由于配置config配置了当前队列会将过期的消息转发到死性队列中。
@@ -80,4 +80,19 @@ public class RabbitController {
         }
         return "ok";
     }
+
+    @RequestMapping(value = "sendMessageBySendAndReceive", method = RequestMethod.POST)
+    public String sendMessageBySendAndReceive(@RequestBody String messageBody) {
+        try {
+            MessageProperties messageProperties = new MessageProperties();
+            messageProperties.setReceivedExchange("spring.direct.exchange");
+            Message message = new Message(messageBody.getBytes(),messageProperties);
+            Message sendAndReceive = amqpTemplate.sendAndReceive("spring.direct.exchange","spring.direct.routing",message);
+            System.out.println(sendAndReceive);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "ok";
+    }
+
 }

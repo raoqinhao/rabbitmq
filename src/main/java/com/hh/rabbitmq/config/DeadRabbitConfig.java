@@ -13,22 +13,22 @@ public class DeadRabbitConfig {
 
     @Bean
     public Queue ttlQueue() {
-        Map<String, Object> args = new HashMap<>();
-        args.put("x-dead-letter-exchange","spring.direct.deadExchange");
-        args.put("x-dead-letter-routing-key","spring.deadRouting");
-//        args.put("x-message-ttl",10000);  // 设置消息过期时间无效果
-//        args.put("x-expires",10000);  // 设置队列过期时间无效果
-        return new Queue("spring.direct.ttl.queue",true,false,false,args);
+        return new Queue("spring.direct.ttl.queue");
     }
 
     @Bean
     public Queue deadQueue() {
-        return new Queue("spring.direct.deadQueue");
+        Map<String, Object> args = new HashMap<>();
+        args.put("x-dead-letter-exchange","spring.direct.ttl.exchange");
+        args.put("x-dead-letter-routing-key","spring.routing");
+//        args.put("x-message-ttl",10000);  // 设置消息过期时间无效果
+//        args.put("x-expires",10000);  // 设置队列过期时间无效果
+        return new Queue("spring.direct.deadQueue",true,false,false,args);
     }
 
     @Bean
-    public DirectExchange directExchange() {
-        return new DirectExchange("spring.direct.exchange");
+    public DirectExchange ttlDirectExchange() {
+        return new DirectExchange("spring.direct.ttl.exchange");
     }
 
     @Bean
@@ -38,7 +38,7 @@ public class DeadRabbitConfig {
 
     @Bean
     public Binding queueBinding1() {
-        return BindingBuilder.bind(ttlQueue()).to(directExchange()).with("spring.routing");
+        return BindingBuilder.bind(ttlQueue()).to(ttlDirectExchange()).with("spring.routing");
     }
 
     @Bean

@@ -7,7 +7,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class ReceiverMessage {
 
-    @RabbitListener(queues = "spring.direct.deadQueue")
+    @RabbitListener(queues = "spring.direct.ttl.queue")
+    @RabbitHandler
+    public void getTtlMessage(String message) {
+        System.out.println(message);
+    }
+
+    @RabbitListener(queues = "spring.direct.queue")
     @RabbitHandler
     public void getMessage(String message) {
         System.out.println(message);
