@@ -1,11 +1,16 @@
 package com.hh.rabbitmq.controller;
 
 
+import com.hh.rabbitmq.config.CustomConfirmCallback;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.MessageProperties;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +24,12 @@ public class RabbitController {
 
     @Autowired
     private AmqpTemplate amqpTemplate;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
+    @Autowired
+    private ConnectionFactory connectionFactory;
 
     @RequestMapping(value = "sendMessage",method = RequestMethod.POST)
     public String sendMessage(@RequestBody String message) {
@@ -89,10 +100,42 @@ public class RabbitController {
             Message message = new Message(messageBody.getBytes(),messageProperties);
             Message sendAndReceive = amqpTemplate.sendAndReceive("spring.direct.exchange","spring.direct.routing",message);
             System.out.println(sendAndReceive);
+            Object receiveMessage = amqpTemplate.receiveAndConvert("spring.direct.queue");
+            System.out.println("-------->" + receiveMessage.toString());
         } catch (Exception e) {
             e.printStackTrace();
         }
         return "ok";
     }
 
+    @RequestMapping(value = "sendCustomMessage", method = RequestMethod.POST)
+    public String sendCustomMessage(@RequestBody String message) {
+        try {
+            rabbitTemplate.setConfirmCallback(new CustomConfirmCallback());
+            rabbitTemplate.convertAndSend("spring.custom.ackExchange","",message);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "ok";
+    }
+
+    @RequestMapping(value = "sendTransactionMessage", method = RequestMethod.POST)
+    public String sendTransactionMessage(@RequestBody String message) throws Exception{
+        Connection connection = connectionFactory.newConnection();
+        Channel channel = connection.createChannel();
+        try {
+            channel.txSelect();
+            channel.exchangeDeclare("spring.channel.exchange", "direct",true);
+            channel.queueDeclare("spring.channel.queue",false,false,false,null);
+            channel.queueBind("spring.channel.queue","spring.channel.exchange","spring.channel.routing");
+            channel.basicPublish("spring.channel.exchange","spring.channel.routing",null,message.getBytes());
+            int i = 1/0;
+            channel.txCommit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            channel.txRollback();
+            return "fail";
+        }
+        return "ok";
+    }
 }

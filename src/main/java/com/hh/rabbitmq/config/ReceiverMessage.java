@@ -1,8 +1,12 @@
 package com.hh.rabbitmq.config;
 
+import com.rabbitmq.client.Channel;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 @Component
 public class ReceiverMessage {
@@ -13,7 +17,7 @@ public class ReceiverMessage {
         System.out.println(message);
     }
 
-    @RabbitListener(queues = "spring.direct.queue")
+//    @RabbitListener(queues = "spring.direct.queue")
     @RabbitHandler
     public void getMessage(String message) {
         System.out.println(message);
@@ -42,4 +46,15 @@ public class ReceiverMessage {
         }
         System.out.println(new String(aByte));
     }
+
+    @RabbitListener(queues = "spring.custom.ackQueue")
+    @RabbitHandler
+    public void getCustomMessage(Message message, Channel channel) throws IOException {
+        try {
+            System.out.println(new String(message.getBody()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
