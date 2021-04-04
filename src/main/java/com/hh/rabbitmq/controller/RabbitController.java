@@ -5,6 +5,7 @@ import com.hh.rabbitmq.config.CustomConfirmCallback;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.GetResponse;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.Message;
@@ -129,7 +130,7 @@ public class RabbitController {
             channel.queueDeclare("spring.channel.queue",false,false,false,null);
             channel.queueBind("spring.channel.queue","spring.channel.exchange","spring.channel.routing");
             channel.basicPublish("spring.channel.exchange","spring.channel.routing",null,message.getBytes());
-            int i = 1/0;
+//            int i = 1/0;
             channel.txCommit();
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,4 +139,25 @@ public class RabbitController {
         }
         return "ok";
     }
+
+    @RequestMapping(value = "getTransactionMessage", method = RequestMethod.GET)
+    public String getTransactionMessage() throws Exception{
+        Connection connection = connectionFactory.newConnection();
+        Channel channel = connection.createChannel();
+        try {
+            // 第二个boolean值表示是否自动应答，true表示自动应答，false表示手动应答。
+            GetResponse getResponse = channel.basicGet("spring.channel.queue", false);
+            String message = new String(getResponse.getBody());
+            System.out.println(message);
+            // Ack表示消费消息，直接从队列中拉取。
+//            channel.basicAck(getResponse.getEnvelope().getDeliveryTag(),true);
+            // Nack表示消息发送后，进行消费数据，如果第三个参数设置为true的时候数据是不会被消费的。而是会将消息重现放回队列。
+            channel.basicNack(getResponse.getEnvelope().getDeliveryTag(),false,true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "fail";
+        }
+        return "ok";
+    }
+
 }
